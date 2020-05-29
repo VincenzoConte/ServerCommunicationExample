@@ -21,6 +21,8 @@ public class ServerExample : MonoBehaviour
         public string value;
     }
 
+    #region user
+
     #region User registration
     public static void UserRegistration(string username, string facebookID = null)
     {
@@ -97,7 +99,6 @@ public class ServerExample : MonoBehaviour
     }
 
     #endregion
-
 
 
     #region Start game session
@@ -225,19 +226,6 @@ public class ServerExample : MonoBehaviour
             instance.StartCoroutine(EndGameSessionCoroutine(userID, locationID, gameStateString));
     }
 
-    static string FormatGameState(List<KeyValue> gameState)
-    {
-        if (gameState.Count <= 0)
-            return null;
-
-        StringBuilder formattedString = new StringBuilder();
-        foreach (var pair in gameState)
-        {
-            formattedString.AppendFormat("{0}:{1};", pair.key, pair.value);
-        }
-
-        return formattedString.ToString();
-    }
 
     static IEnumerator EndGameSessionCoroutine(string userID, string locationID, string gameState)
     {
@@ -269,4 +257,383 @@ public class ServerExample : MonoBehaviour
 
     #endregion
 
+    #endregion
+
+    #region admin
+
+    #region Get user
+    public static void GetUserByID(string userid)
+    {
+        instance.StartCoroutine(GetUserByIDCoroutine(userid));
+    }
+
+    static IEnumerator GetUserByIDCoroutine(string userid)
+    {
+
+        //creating request
+        StringBuilder requestURL = new StringBuilder(URL);
+        requestURL.Append("/getuser");
+        requestURL.AppendFormat("?userid={0}", userid);
+        UnityWebRequest request = UnityWebRequest.Get(requestURL.ToString());
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+    #region List Users
+    public static void ListUsers()
+    {
+        instance.StartCoroutine(ListUsersCoroutine());
+    }
+
+    static IEnumerator ListUsersCoroutine()
+    {
+
+        //creating request
+        StringBuilder requestURL = new StringBuilder(URL);
+        requestURL.Append("/listusers");
+        UnityWebRequest request = UnityWebRequest.Get(requestURL.ToString());
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+    #region Update User
+    public static void UpdateUser(string userID, string username = null, string facebookID = null)
+    {
+        instance.StartCoroutine(UpdateUserCoroutine(userID, username, facebookID));
+    }
+
+    static IEnumerator UpdateUserCoroutine(string userID, string username = null, string facebookID = null)
+    {
+        //adding parameters for the POST request
+        WWWForm form = new WWWForm();
+        form.AddField("userid", userID);
+        if (username != null)
+            form.AddField("username", username);
+        if (facebookID != null)
+            form.AddField("facebookid", facebookID);
+
+        //creating request
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/updateuser", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+
+    #endregion
+
+    #region Add user
+    public static void AddUser(string username, string facebookID = null)
+    {
+        instance.StartCoroutine(AddUserCoroutine(username, facebookID));
+    }
+
+    static IEnumerator AddUserCoroutine(string username, string facebookID = null)
+    {
+        //adding parameters for the POST request
+        WWWForm form = new WWWForm();
+        form.AddField("username", username);
+        if (facebookID != null)
+            form.AddField("facebookid", facebookID);
+
+        //creating request
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/adduser", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            //get user id
+            string id = request.GetResponseHeader("id");
+
+            Debug.Log("user added, id: " + id);
+        }
+
+    }
+    #endregion
+
+    #region remove user
+    public static void RemoveUser(string userid)
+    {
+        instance.StartCoroutine(RemoveUserCoroutine(userid));
+    }
+
+    static IEnumerator RemoveUserCoroutine(string userid)
+    {
+
+        //creating request
+        WWWForm form = new WWWForm();
+        form.AddField("userid", userid);
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/removeuser", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+
+    #region Get Session
+    public static void GetSessionByID(string sessionid)
+    {
+        instance.StartCoroutine(GetSessionByIDCoroutine(sessionid));
+    }
+
+    static IEnumerator GetSessionByIDCoroutine(string sessionid)
+    {
+
+        //creating request
+        StringBuilder requestURL = new StringBuilder(URL);
+        requestURL.Append("/getsession");
+        requestURL.AppendFormat("?sessionid={0}", sessionid);
+        UnityWebRequest request = UnityWebRequest.Get(requestURL.ToString());
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+    #region List Sessions
+    public static void ListSessions()
+    {
+        instance.StartCoroutine(ListSessionsCoroutine());
+    }
+
+    static IEnumerator ListSessionsCoroutine()
+    {
+
+        //creating request
+        StringBuilder requestURL = new StringBuilder(URL);
+        requestURL.Append("/listsessions");
+        UnityWebRequest request = UnityWebRequest.Get(requestURL.ToString());
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+    #region Update Session
+    public static void UpdateSession(string sessionid, string userid = null, string locationid = null, string state = null, List<KeyValue> gameState = null)
+    {
+        instance.StartCoroutine(UpdateSessionCoroutine(sessionid, userid, locationid, state, FormatGameState(gameState)));
+    }
+
+    static IEnumerator UpdateSessionCoroutine(string sessionid, string userid = null, string locationid = null, string state = null, string gameState = null)
+    {
+        //adding parameters for the POST request
+        WWWForm form = new WWWForm();
+        form.AddField("sessionid", sessionid);
+        if (userid != null)
+            form.AddField("userid", userid);
+        if (locationid != null)
+            form.AddField("locationid", locationid);
+        if (state != null)
+            form.AddField("state", state);
+        if (gameState != null)
+            form.AddField("gamestate", gameState);
+
+        //creating request
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/updatesession", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+
+    #endregion
+
+    #region Add Session
+    public static void AddSession(string userid, string locationid, string state, List<KeyValue> gameState = null)
+    {
+        instance.StartCoroutine(AddSessionCoroutine(userid, locationid, state, FormatGameState(gameState)));
+    }
+
+    static IEnumerator AddSessionCoroutine(string userid, string locationid, string state, string gameState = null)
+    {
+        //adding parameters for the POST request
+        WWWForm form = new WWWForm();
+        form.AddField("userid", userid);
+        form.AddField("locationid", locationid);
+        form.AddField("state", state);
+        if (gameState != null)
+            form.AddField("gamestate", gameState);
+
+        //creating request
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/addsession", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+
+    #endregion
+
+    #region remove Session
+    public static void RemoveSession(string sessionid)
+    {
+        instance.StartCoroutine(RemoveSessionCoroutine(sessionid));
+    }
+
+    static IEnumerator RemoveSessionCoroutine(string sessionid)
+    {
+
+        //creating request
+        WWWForm form = new WWWForm();
+        form.AddField("sessionid", sessionid);
+        UnityWebRequest request = UnityWebRequest.Post(URL + "/removesession", form);
+
+        //sending request and waiting for response
+        yield return request.SendWebRequest();
+
+        if (request.isHttpError || request.isNetworkError)
+        {
+            //error handling
+            Debug.Log("request ended with an error: " + request.error);
+            Debug.Log(request.downloadHandler.text);
+        }
+        else
+        {
+            //response ended succesfully
+
+            Debug.Log(request.downloadHandler.text);
+        }
+
+    }
+    #endregion
+
+
+    #endregion
+
+
+    static string FormatGameState(List<KeyValue> gameState)
+    {
+        if (gameState == null || gameState.Count <= 0)
+            return null;
+
+        StringBuilder formattedString = new StringBuilder();
+        foreach (var pair in gameState)
+        {
+            formattedString.AppendFormat("{0}:{1};", pair.key, pair.value);
+        }
+
+        return formattedString.ToString();
+    }
 }
